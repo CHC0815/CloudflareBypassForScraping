@@ -89,13 +89,13 @@ def bypass_cloudflare(url: str, retries: int, log: bool, proxy: str = None) -> C
 
 # Endpoint to get cookies
 @app.get("/cookies", response_model=CookieResponse)
-async def get_cookies(url: str, retries: int = 5, proxy: str = None):
+async def get_cookies(url: str, retries: int = 5, proxy: str = None, user_agent: str = None):
     if not is_safe_url(url):
         raise HTTPException(status_code=400, detail="Invalid URL")
     try:
         driver = bypass_cloudflare(url, retries, log, proxy)
         cookies = {cookie.get("name", ""): cookie.get("value", " ") for cookie in driver.cookies()}
-        user_agent = driver.user_agent
+        user_agent = user_agent or driver.user_agent
         driver.quit()
         return CookieResponse(cookies=cookies, user_agent=user_agent)
     except Exception as e:
